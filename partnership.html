@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="az">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="partnership.css">
+    <link rel="icon" href="logo.png">
+    <title>Chaply | Əməkdaşlıq - Öz brendini qur və qazan</title>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- ========== DESKTOP NAVBAR ========== -->
+    <div class="nav-bar" id="desktopNav">
+        <div class="logo-zone" id="BackHome" data-link="/">
+            <img src="logo.png" alt="Chaply Logo">
+        </div>
+        <div class="others-zone">
+            <div class="nav-elements" data-link="/product">
+                <p>Məhsullar</p>
+            </div>
+            <div class="nav-elements" data-link="/design">
+                <p>Dizayn et</p>
+            </div>
+            <div class="nav-elements" data-link="/designed">
+                <p>Dizaynı hazırlat</p>
+            </div>
+            <div class="nav-elements" data-link="/partnership">
+                <p>Əməkdaşlıq</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== MOBİL TOP LOGO BAR ========== -->
+    <div class="mobile-top-bar">
+        <a data-link="/">
+            <img src="logo.png" alt="Chaply Logo" class="mobile-logo">
+        </a>
+    </div>
+
+    <!-- ========== MOBİL NAVBAR ========== -->
+    <nav class="mobile-nav" id="mobileNav">
+        <a data-link="/" class="mobile-nav-item">
+            <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 512 512" height="200px" width="200px" xmlns="http://www.w3.org/2000/svg">
+                <path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="32" d="M80 212v236a16 16 0 0 0 16 16h96V328a24 24 0 0 1 24-24h80a24 24 0 0 1 24 24v136h96a16 16 0 0 0 16-16V212"></path>
+                <path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="32" d="M480 256 266.89 52c-5-5.28-16.69-5.34-21.78 0L32 256m368-77V64h-48v69"></path>
+            </svg>
+            <span>Ana Səhifə</span>
+        </a>
+        <a data-link="/product" class="mobile-nav-item">
+            <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 24 24" height="200px" width="200px" xmlns="http://www.w3.org/2000/svg">
+                <g id="Shopping_Basket">
+                    <g>
+                        <path d="M19.44,7.937H17.3l-1.21-4.51a.508.508,0,0,0-.61-.35.489.489,0,0,0-.35.61l1.14,4.25H7.74l1.14-4.25a.5.5,0,0,0-.36-.61.513.513,0,0,0-.61.35l-1.2,4.51H4.56a1.5,1.5,0,0,0-.32,2.96l.74,7.77a2.492,2.492,0,0,0,2.49,2.27h9.06a2.492,2.492,0,0,0,2.49-2.27l.74-7.77a1.5,1.5,0,0,0-.32-2.96Zm-1.41,10.64a1.5,1.5,0,0,1-1.5,1.36H7.47a1.5,1.5,0,0,1-1.5-1.36l-.72-7.64h13.5Zm1.41-8.64H4.56a.508.508,0,0,1-.5-.5.5.5,0,0,1,.5-.5H19.44a.5.5,0,0,1,.5.5A.508.508,0,0,1,19.44,9.937Z"></path>
+                        <path d="M9.5,17.432a.5.5,0,0,1-.5-.5v-3a.5.5,0,0,1,1,0v3A.5.5,0,0,1,9.5,17.432Z"></path>
+                        <path d="M14.5,17.432a.5.5,0,0,1-.5-.5v-3a.5.5,0,0,1,1,0v3A.5.5,0,0,1,14.5,17.432Z"></path>
+                    </g>
+                </g>
+            </svg>
+            <span>Məhsullar</span>
+        </a>
+        <a data-link="/design" class="mobile-nav-item">
+            <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 512 512" height="200px" width="200px" xmlns="http://www.w3.org/2000/svg">
+                <path fill="none" stroke-miterlimit="10" stroke-width="32" d="M430.11 347.9c-6.6-6.1-16.3-7.6-24.6-9-11.5-1.9-15.9-4-22.6-10-14.3-12.7-14.3-31.1 0-43.8l30.3-26.9c46.4-41 46.4-108.2 0-149.2-34.2-30.1-80.1-45-127.8-45-55.7 0-113.9 20.3-158.8 60.1-83.5 73.8-83.5 194.7 0 268.5 41.5 36.7 97.5 55 152.9 55.4h1.7c55.4 0 110-17.9 148.8-52.4 14.4-12.7 11.99-36.6.1-47.7z"></path>
+                <circle cx="144" cy="208" r="32"></circle>
+                <circle cx="152" cy="311" r="32"></circle>
+                <circle cx="224" cy="144" r="32"></circle>
+                <circle cx="256" cy="367" r="48"></circle>
+                <circle cx="328" cy="144" r="32"></circle>
+            </svg>
+            <span>Dizayn et</span>
+        </a>
+        <a data-link="/designed" class="mobile-nav-item">
+            <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 24 24" height="200px" width="200px" xmlns="http://www.w3.org/2000/svg">
+                <path fill="none" d="M0 0h24v24H0z"></path>
+                <path d="M20.97 7.27a.996.996 0 0 0 0-1.41l-2.83-2.83a.996.996 0 0 0-1.41 0l-4.49 4.49-3.89-3.89c-.78-.78-2.05-.78-2.83 0l-1.9 1.9c-.78.78-.78 2.05 0 2.83l3.89 3.89L3 16.76V21h4.24l4.52-4.52 3.89 3.89c.95.95 2.23.6 2.83 0l1.9-1.9c.78-.78.78-2.05 0-2.83l-3.89-3.89 4.48-4.48zM5.04 6.94l1.89-1.9L8.2 6.31 7.02 7.5l1.41 1.41 1.19-1.19 1.2 1.2-1.9 1.9-3.88-3.88zm11.23 7.44-1.19 1.19 1.41 1.41 1.19-1.19 1.27 1.27-1.9 1.9-3.89-3.89 1.9-1.9 1.21 1.21zM6.41 19H5v-1.41l9.61-9.61 1.3 1.3.11.11L6.41 19zm9.61-12.44 1.41-1.41 1.41 1.41-1.41 1.41-1.41-1.41z"></path>
+            </svg>
+            <span>Hazırlat</span>
+        </a>
+        <a data-link="/partnership" class="mobile-nav-item active">
+            <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 512 512" height="200px" width="200px" xmlns="http://www.w3.org/2000/svg">
+                <path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="32" d="M402 168c-2.93 40.67-33.1 72-66 72s-63.12-31.32-66-72c-3-42.31 26.37-72 66-72s69 30.46 66 72z"></path>
+                <path fill="none" stroke-miterlimit="10" stroke-width="32" d="M336 304c-65.17 0-127.84 32.37-143.54 95.41-2.08 8.34 3.15 16.59 11.72 16.59h263.65c8.57 0 13.77-8.25 11.72-16.59C463.85 335.36 401.18 304 336 304z"></path>
+                <path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="32" d="M200 185.94c-2.34 32.48-26.72 58.06-53 58.06s-50.7-25.57-53-58.06C91.61 152.15 115.34 128 147 128s55.39 24.77 53 57.94z"></path>
+                <path fill="none" stroke-linecap="round" stroke-miterlimit="10" stroke-width="32" d="M206 306c-18.05-8.27-37.93-11.45-59-11.45-52 0-102.1 25.85-114.65 76.2-1.65 6.66 2.53 13.25 9.37 13.25H154"></path>
+            </svg>
+            <span>Əməkdaşlıq</span>
+        </a>
+    </nav>
+
+    <!-- ========== ƏSAS MƏZMUN - YENİ DİZAYN ========== -->
+    <main class="earn-container">
+        <!-- Hero bölməsi -->
+        <div class="earn-header">
+            <h1>🚀 Öz brendini qur və <span style="color: #ff6b35;">ayda 1000+ AZN</span> qazan!</h1>
+            <p>Stok saxlamadan, risk etmədən, sadəcə sosial mediada paylaşaraq pul qazan</p>
+        </div>
+
+       
+        <!-- Sistem necə işləyir + Qazanc sistemi birlikdə -->
+        <div class="earn-grid">
+            <div class="earn-left">
+                <div class="info-card" style="background: linear-gradient(135deg, #fff, #f0f7f4);">
+                    <h3>💎 Siz nə qazanırsınız?</h3>
+                    <ul class="step-list">
+                        <li><strong>Hər satışdan 60-75% xalis qazanc</strong> (yuxarıdakı cədvəl)</li>
+                        <li><strong>Heç bir istehsal xərciniz yoxdur</strong> - hamısı bizim tərəfimizdən</li>
+                        <li><strong>Stok saxlamaq lazım deyil</strong> - sifariş əsasında istehsal</li>
+                        <li><strong>Aylıq 500+ AZN qazanan əməkdaşlarımız var</strong></li>
+                        <li><strong>Bonus sistemi:</strong> 50+ satışda +5%, 100+ satışda +10% əlavə bonus</li>
+                    </ul>
+                </div>
+                <div class="info-card">
+                    <h3>📈 Aylıq qazanc potensialınız</h3>
+                    <div class="profit-box">
+                        <div class="profit-item">🔹 30 satış/ay: <strong>300-500 AZN</strong></div>
+                        <div class="profit-item">🔹 70 satış/ay: <strong>800-1200 AZN</strong></div>
+                        <div class="profit-item">🔹 150+ satış/ay: <strong>2000-3500+ AZN</strong></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="earn-right">
+                <div class="info-card">
+                    <h3>⚡ Sistem necə işləyir?</h3>
+                    <ul class="step-list">
+                        <li><strong>1.</strong> Qeydiyyatdan keç</li>
+                        <li><strong>2.</strong> Biz sənə hazır dizaynlar və post materialları veririk</li>
+                        <li><strong>3.</strong> Sən sosial mediada paylaş, sifarişləri topla</li>
+                        <li><strong>4.</strong> Biz istehsal və çatdırılmanı edirik</li>
+                        <li><strong>5.</strong> Hər satışdan qazancın hesabına köçürülür</li>
+                    </ul>
+                </div>
+                <div class="info-card target-card">
+                    <h3>🎯 Kimlər üçündür?</h3>
+                    <ul class="check-list">
+                        <li>✅ Sosial mediada aktiv olanlar</li>
+                        <li>✅ Əlavə gəlir axtaranlar</li>
+                        <li>✅ Öz biznesini sıfırdan qurmaq istəyənlər</li>
+                        <li>✅ Satış bacarığını inkişaf etdirmək istəyənlər</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dizayn sistemi bölməsi -->
+        <div class="design-system">
+            <div class="design-card">
+                <h3>🎨 Sizə nə veririk?</h3>
+                <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin: 20px 0;">
+                    <span style="background: rgba(255,255,255,0.3); padding: 8px 20px; border-radius: 40px;">✅ Hazır satışa uyğun dizaynlar</span>
+                    <span style="background: rgba(255,255,255,0.3); padding: 8px 20px; border-radius: 40px;">✅ Kontent və post materialları</span>
+                    <span style="background: rgba(255,255,255,0.3); padding: 8px 20px; border-radius: 40px;">✅ Satış təlimatı</span>
+                    <span style="background: rgba(255,255,255,0.3); padding: 8px 20px; border-radius: 40px;">✅ İstehsal və logistika dəstəyi</span>
+                    <span style="background: rgba(255,255,255,0.3); padding: 8px 20px; border-radius: 40px;">✅ Fərdi dizayn dəstəyi</span>
+                </div>
+                <p class="note">Yeni üzvlər üçün 1 ilkin dizayn sorğusu qəbul oluna bilər</p>
+                <p class="warning-note">Bu xidmət yalnız sistemə uyğun işləyən istifadəçilər üçün aktivdir</p>
+            </div>
+        </div>
+
+        <!-- CTA bölməsi - Güclü çağırış -->
+        <div class="cta-section">
+            <div class="cta-card" style="background: linear-gradient(135deg, rgb(20,78,46), rgb(13,100,70));">
+                <h2>🔥 Hazırda 20+ əməkdaş qazanır</h2>
+                <p>Sən də onlardan biri ol! Qeydiyyatdan keç və satışa başla</p>
+                <button id="joinNowBtn" class="join-btn">
+                    <i class="fas fa-rocket"></i> İndi qoşul - PULSUZ
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- ========== QEYDİYYAT MODAL ========== -->
+    <div id="registerModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2><i class="fas fa-handshake"></i> Əməkdaşlıq üçün müraciət</h2>
+            <form id="registerForm" autocomplete="off">
+                <div class="form-row">
+                    <div class="form-group"><label>Ad *</label><input type="text" id="regName" required placeholder="Adınız"></div>
+                    <div class="form-group"><label>Soyad *</label><input type="text" id="regSurname" required placeholder="Soyadınız"></div>
+                </div>
+                <div class="form-group"><label>📞 Əlaqə nömrəsi *</label><input type="tel" id="regPhone" required placeholder="+994 XX XXX XX XX"></div>
+                <div class="form-group"><label>📷 Instagram istifadəçi adı</label><input type="text" id="regInstagram" placeholder="@istifadeciadi"></div>
+                <div class="form-group"><label>💬 Əlavə qeyd (istəyə bağlı)</label><textarea id="regNote" rows="2" placeholder="Varsa əlavə sual və ya qeyd..."></textarea></div>
+                <button type="submit" class="submit-order-btn">
+                    <i class="fas fa-paper-plane"></i> Müraciət et
+                </button>
+            </form>
+            <p style="font-size: 12px; text-align: center; margin-top: 15px; color: #666;">Müraciətiniz 24 saat ərzində cavablandırılacaq</p>
+        </div>
+    </div>
+
+    <!-- ========== FOOTER ========== -->
+    <footer class="footer-zone">
+        <div class="footer-content">
+            <div class="footer-section about">
+                <h2 class="footer-logo">Chaply</h2>
+                <p>Öz tərzini yarat, ideyalarını geyim üzərində canlandır.</p>
+                <div class="social-links">
+                    <a href="https://www.instagram.com/chaplyazerbaijan/" target="_blank"><i class="fab fa-instagram"></i></a>
+                    <a href="https://www.tiktok.com/@chaplyazerbaijan" target="_blank"><i class="fab fa-tiktok"></i></a>
+                    <a href="https://wa.me/99455749751" target="_blank"><i class="fab fa-whatsapp"></i></a>
+                </div>
+            </div>
+            <div class="footer-section links">
+                <h3>Bölmələr</h3>
+                <ul>
+                    <li><a data-link="/">Ana Səhifə</a></li>
+                    <li><a data-link="/product">Məhsullar</a></li>
+                    <li><a data-link="/design">Dizayn</a></li>
+                    <li><a data-link="/partnership">Əməkdaşlıq</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section contact">
+                <h3>Əlaqə</h3>
+                <p>Goranboy, Azərbaycan</p>
+                <p>+994 (55) 749 77 51</p>
+                <p>chaplyazerbaijan@gmail.com</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Chaply | Bütün hüquqlar qorunur.</p>
+        </div>
+    </footer>
+
+    <script src="partnership.js"></script>
+</body>
+
+</html>
