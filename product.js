@@ -1,4 +1,4 @@
-// product.js - Chaply Məhsullar (EmailJS Tam Dəstəkli)
+// product.js - Chaply Məhsullar (Google Apps Script ilə)
 
 // ============================================================
 // KONFİQURASİYA
@@ -7,19 +7,12 @@ const CONFIG = {
     SHEET_ID: '1md0gSVfSMdHskEL57HaNteots5hqN_taxMDnQCyVFfc',
     PRODUCTS_SHEET: 'products',
     IMAGE_PROXY_URL: 'https://script.google.com/macros/s/AKfycbxVBpMw6VfLFSVVM9N1Mbfj7VZsORvisnFqgiZpPpdpJQWwGi2eO6wLY4CJD_zx59qm/exec',
-    EMAILJS_PUBLIC_KEY: 'nkZ98Ga10XtaLm5By',
-    EMAILJS_SERVICE_ID: 'service_7cd7g3b',
-    EMAILJS_TEMPLATE_ID: 'template_4kwa9rq',
+    GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzKkslNu00930ibGFi244SFOQTKuKHuQG8ELHE9rwrIcS6AO0mnRPumB-dCnFD0KQq4/exec',
     ORDER_TO_EMAIL: 'eli120124@gmail.com'
 };
 
 // BÜTÜN MÜMKÜN ÖLÇÜLƏR
 const ALL_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
-
-// EmailJS başlat
-if (window.emailjs) {
-    emailjs.init(CONFIG.EMAILJS_PUBLIC_KEY);
-}
 
 let ALL_PRODUCTS = [];
 let currentProduct = null;
@@ -590,9 +583,9 @@ function initOrderForm() {
         // Şəkil URL-ini hazırla
         const productImageUrl = await getImageUrl(currentProduct.image);
 
-        // EmailJS-ə göndəriləcək parametrlər (TEMPLATE İLƏ UYĞUN)
-        const templateParams = {
-            email: CONFIG.ORDER_TO_EMAIL,           // Template-də {{email}} var
+        // Google Apps Script-ə göndəriləcək məlumatlar
+        const orderData = {
+            email: CONFIG.ORDER_TO_EMAIL,
             order_id: orderId,
             order_date: orderDate,
             customer_name: `${name} ${surname}`,
@@ -605,11 +598,14 @@ function initOrderForm() {
             product_size: selectedSize,
             product_quantity: currentQuantity,
             total_price: totalPrice + ' ₼',
-            product_image: productImageUrl,
+            product_image: productImageUrl || null,
+            design_image: null,
+            uploaded_image: null,
+            print_type: 'Yoxdur',
             note: note || 'Yoxdur'
         };
 
-        console.log('📧 EmailJS-ə göndərilir:', templateParams);
+        console.log('📧 Google Apps Script-ə göndərilir:', orderData);
 
         // Loading göstər
         const submitBtn = form.querySelector('.submit-order-btn');
@@ -618,19 +614,22 @@ function initOrderForm() {
         submitBtn.disabled = true;
 
         try {
-            const response = await emailjs.send(
-                CONFIG.EMAILJS_SERVICE_ID,
-                CONFIG.EMAILJS_TEMPLATE_ID,
-                templateParams
-            );
+            const response = await fetch(CONFIG.GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(orderData)
+            });
 
-            console.log('✅ EmailJS uğurlu:', response);
+            console.log('✅ Sifariş göndərildi');
             showToast('✅ Sifarişiniz göndərildi! Tezliklə əlaqə saxlanılacaq.', 'success');
 
             document.getElementById('orderModal').style.display = 'none';
             form.reset();
         } catch (err) {
-            console.error('❌ EmailJS xətası:', err);
+            console.error('❌ Göndərmə xətası:', err);
             showToast('❌ Sifariş göndərilərkən xəta baş verdi!', 'error');
         } finally {
             submitBtn.innerHTML = originalText;
