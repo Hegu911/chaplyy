@@ -6,9 +6,7 @@ const CONFIG = {
     PRODUCTS_SHEET: 'products_for_design',
     STICKERS_SHEET: 'stickers',
     SIZES_SHEET: 'sizes',
-    EMAILJS_PUBLIC_KEY: 'nkZ98Ga10XtaLm5By',
-    EMAILJS_SERVICE_ID: 'service_7cd7g3b',
-    EMAILJS_TEMPLATE_ID: 'template_4kwa9rq',
+    GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzKkslNu00930ibGFi244SFOQTKuKHuQG8ELHE9rwrIcS6AO0mnRPumB-dCnFD0KQq4/exec',
     ORDER_TO_EMAIL: 'eli120124@gmail.com'
 };
 
@@ -16,8 +14,6 @@ const FONT_LIST = [
     'Inter', 'Poppins', 'Roboto', 'Montserrat', 'Open Sans', 'Lato', 'Nunito', 'Raleway',
     'Quicksand', 'DM Sans', 'Manrope', 'Rubik', 'Playfair Display', 'Bebas Neue', 'Anton'
 ];
-
-if (window.emailjs) emailjs.init(CONFIG.EMAILJS_PUBLIC_KEY);
 
 // ============================================================
 // RESPONSİV CANVAS ÖLÇÜSÜ
@@ -58,6 +54,7 @@ let selectedPrintType = 'no_print';
 let currentQuantity = 1;
 let currentSizeExtra = 0;
 let selectedSize = 'M';
+let uploadedUserImage = null;
 
 // ============================================================
 // KÖMƏKÇİ FUNKSİYALAR
@@ -145,7 +142,6 @@ function openMobilePanel(panelId) {
     if (panel) {
         panel.classList.add('active');
         activeMobilePanel = panelId;
-        // Aktiv panelə scroll et
         setTimeout(() => {
             panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }, 100);
@@ -265,7 +261,6 @@ async function loadProductTemplates() {
         container.appendChild(card);
     });
     
-    // Mobil şablonları da doldur
     updateMobileTemplates();
     
     setTimeout(() => {
@@ -424,7 +419,6 @@ function updatePrintOptions(product) {
         noPrint.classList.add('active');
         selectedPrintType = 'no_print';
     } else {
-        // İlk aktiv seçimi tap
         const firstActive = container.querySelector('.print-option-btn:not(.disabled)');
         if (firstActive) {
             firstActive.classList.add('active');
@@ -475,7 +469,6 @@ function calculateAndUpdatePrice() {
     if (sizeEl) sizeEl.textContent = `${sizeExtra.toFixed(2)} ₼`;
     if (totalEl) totalEl.textContent = `${total.toFixed(2)} ₼`;
     
-    // Gizlət/göstər
     if (sizeRow) sizeRow.style.display = sizeExtra === 0 ? 'none' : 'flex';
     if (printRow) printRow.style.display = printPrice === 0 ? 'none' : 'flex';
 }
@@ -564,7 +557,6 @@ function updateFontSize(size) {
         }
         canvas.renderAll();
         
-        // Slider dəyərlərini yenilə
         document.getElementById('desktopFontSizeValue').textContent = numSize;
         document.getElementById('mobileFontSizeValue').textContent = numSize;
     }
@@ -585,7 +577,6 @@ function toggleBold() {
     }
 }
 
-// DÜZƏLDİLMİŞ İTALİK FUNKSİYASI
 function toggleItalic() {
     const obj = canvas.getActiveObject();
     if (obj && (obj.type === 'i-text' || obj.type === 'text' || obj.type === 'textbox')) {
@@ -593,10 +584,8 @@ function toggleItalic() {
         const newStyle = (currentStyle === 'italic') ? 'normal' : 'italic';
         
         if (obj.isEditing) {
-            // Redaktə modunda seçilmiş hissəyə tətbiq et
             obj.setSelectionStyles({ 'fontStyle': newStyle });
         } else {
-            // Bütün mətnə tətbiq et
             obj.set('fontStyle', newStyle);
         }
         canvas.renderAll();
@@ -676,12 +665,13 @@ function resetCanvas() {
         canvas.backgroundColor = '#f0f0f0';
         if (activeProduct) setProductBackground(activeProduct.image || activeProduct.url);
         canvas.renderAll();
+        uploadedUserImage = null;
         showToast('Canvas sıfırlandı', 'info');
     }
 }
 
 // ============================================================
-// FAYL YÜKLƏMƏ FUNKSİYASI (DÜZƏLDİLDİ)
+// FAYL YÜKLƏMƏ FUNKSİYASI
 // ============================================================
 function handleImageUpload(file, source = 'desktop') {
     if (!file) {
@@ -701,10 +691,13 @@ function handleImageUpload(file, source = 'desktop') {
     
     const reader = new FileReader();
     reader.onload = (ev) => {
+        uploadedUserImage = ev.target.result;
+        
         try {
             fabric.Image.fromURL(ev.target.result, (img) => {
                 if (!img) {
                     showToast('Şəkil yüklənmədi! Fayl formatı dəstəklənməyə bilər.', 'error');
+                    uploadedUserImage = null;
                     return;
                 }
                 const maxW = canvas.width * 0.4;
@@ -727,11 +720,13 @@ function handleImageUpload(file, source = 'desktop') {
         } catch (error) {
             console.error('Fabric.js şəkil yükləmə xətası:', error);
             showToast('Şəkil emal edilə bilmədi.', 'error');
+            uploadedUserImage = null;
         }
     };
     reader.onerror = (error) => {
         console.error('Fayl oxuma xətası:', error);
         showToast('Fayl oxunmadı!', 'error');
+        uploadedUserImage = null;
     };
     reader.readAsDataURL(file);
 }
@@ -742,7 +737,6 @@ function handleImageUpload(file, source = 'desktop') {
 canvas.on('selection:created', (e) => updateSliders(e.selected?.[0]));
 canvas.on('selection:updated', (e) => updateSliders(e.selected?.[0]));
 canvas.on('selection:cleared', () => {
-    // Seçim ləğv olunduqda default dəyərlərə qaytar
     document.getElementById('desktopFontSizeValue').textContent = '30';
     document.getElementById('mobileFontSizeValue').textContent = '30';
     document.getElementById('desktopRotationValue').textContent = '0';
@@ -754,7 +748,6 @@ canvas.on('selection:cleared', () => {
 function updateSliders(obj) {
     if (!obj) return;
     
-    // Mətn obyekti üçün
     if (obj.type === 'i-text' || obj.type === 'text' || obj.type === 'textbox') {
         const fs = obj.fontSize || 30;
         const desktopFs = document.getElementById('desktopFontSize');
@@ -771,7 +764,6 @@ function updateSliders(obj) {
         if (mobileFam) mobileFam.value = ff;
     }
     
-    // Fırlatma
     const angle = Math.round(obj.angle || 0);
     const desktopRot = document.getElementById('desktopRotation');
     const mobileRot = document.getElementById('mobileRotation');
@@ -780,7 +772,6 @@ function updateSliders(obj) {
     document.getElementById('desktopRotationValue').textContent = angle;
     document.getElementById('mobileRotationValue').textContent = angle;
     
-    // Şəffaflıq
     const opacity = obj.opacity !== undefined ? obj.opacity : 1;
     const desktopOp = document.getElementById('desktopOpacity');
     const mobileOp = document.getElementById('mobileOpacity');
@@ -794,14 +785,11 @@ function updateSliders(obj) {
 // BÜTÜN EVENT LISTENERLAR
 // ============================================================
 function initEventListeners() {
-    // ========== DESKTOP FAYL YÜKLƏMƏ (DÜZƏLDİLDİ) ==========
     const desktopImageInput = document.getElementById('desktopImageUpload');
     if (desktopImageInput) {
-        // Hər click-də input dəyərini sıfırla ki, eyni fayl təkrar seçilə bilsin
         desktopImageInput.addEventListener('click', function() {
             this.value = null;
         });
-        // Fayl seçildikdə handleImageUpload funksiyasını çağır
         desktopImageInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
@@ -811,7 +799,6 @@ function initEventListeners() {
         });
     }
     
-    // ========== MOBİL FAYL YÜKLƏMƏ (DÜZƏLDİLDİ) ==========
     const mobileImageInput = document.getElementById('mobileImageUpload');
     if (mobileImageInput) {
         mobileImageInput.addEventListener('click', function() {
@@ -827,7 +814,6 @@ function initEventListeners() {
         });
     }
     
-    // ========== DESKTOP MƏTN ƏLAVƏ ==========
     const desktopAddText = document.getElementById('desktopAddTextBtn');
     if (desktopAddText) {
         desktopAddText.onclick = () => {
@@ -840,7 +826,6 @@ function initEventListeners() {
         };
     }
     
-    // Enter ilə mətn əlavə et
     const desktopTextInput = document.getElementById('desktopTextInput');
     if (desktopTextInput) {
         desktopTextInput.onkeydown = (e) => {
@@ -853,14 +838,12 @@ function initEventListeners() {
         };
     }
     
-    // ========== DESKTOP RƏNG ==========
     const desktopColor = document.getElementById('desktopColorPicker');
     if (desktopColor) desktopColor.oninput = (e) => updateTextColor(e.target.value);
     
     const desktopBg = document.getElementById('desktopBgColorPicker');
     if (desktopBg) desktopBg.oninput = (e) => setCanvasBackground(e.target.value);
     
-    // ========== DESKTOP ŞRİFT ==========
     const desktopFont = document.getElementById('desktopFontFamily');
     if (desktopFont) desktopFont.onchange = (e) => updateFontFamily(e.target.value);
     
@@ -881,7 +864,6 @@ function initEventListeners() {
     const desktopUnderline = document.getElementById('desktopToggleUnderline');
     if (desktopUnderline) desktopUnderline.onclick = toggleUnderline;
     
-    // ========== DESKTOP OBYEKT İDARƏETMƏ ==========
     const desktopBring = document.getElementById('desktopBringToFrontBtn');
     if (desktopBring) desktopBring.onclick = bringToFront;
     
@@ -919,7 +901,6 @@ function initEventListeners() {
     const desktopSend = document.getElementById('desktopSendDesignBtn');
     if (desktopSend) desktopSend.onclick = openPreviewModal;
     
-    // ========== MOBİL MƏTN ==========
     const mobileAddText = document.getElementById('mobileAddTextBtn');
     if (mobileAddText) {
         mobileAddText.onclick = () => {
@@ -996,7 +977,6 @@ function initEventListeners() {
     const mobileSend = document.getElementById('mobileSendDesignBtn');
     if (mobileSend) mobileSend.onclick = openPreviewModal;
     
-    // ========== MOBİL TOOL ICON LAR ==========
     const toolIcons = document.querySelectorAll('.tool-icon');
     toolIcons.forEach(icon => {
         icon.onclick = (e) => {
@@ -1008,7 +988,6 @@ function initEventListeners() {
                     closeMobilePanel(panelId);
                     icon.classList.remove('active');
                 } else {
-                    // Bütün panelləri bağla
                     document.querySelectorAll('.tool-icon').forEach(ti => ti.classList.remove('active'));
                     icon.classList.add('active');
                     openMobilePanel(panelId);
@@ -1017,14 +996,12 @@ function initEventListeners() {
         };
     });
     
-    // ========== QİYMƏT YENİLƏMƏ ==========
     const orderQty = document.getElementById('orderQuantity');
     if (orderQty) orderQty.oninput = calculateAndUpdatePrice;
     
     const orderSize = document.getElementById('orderSize');
     if (orderSize) orderSize.onchange = calculateAndUpdatePrice;
     
-    // ========== KLAVİATURA QISAYOLLARI ==========
     document.addEventListener('keydown', (e) => {
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
         
@@ -1107,7 +1084,7 @@ function closeOrderFormModal() {
 }
 
 // ============================================================
-// SİFARİŞ GÖNDƏR
+// SİFARİŞ GÖNDƏR (GOOGLE APPS SCRIPT İLƏ)
 // ============================================================
 document.getElementById('finalOrderForm')?.addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -1129,21 +1106,19 @@ document.getElementById('finalOrderForm')?.addEventListener('submit', async func
     canvas.discardActiveObject();
     canvas.renderAll();
     
-    let designImage = canvas.toDataURL({ format: 'jpeg', quality: 0.6 });
-    if (designImage.length > 50 * 1024) {
+    // Yüksək keyfiyyətli PNG alırıq
+    let designImage = canvas.toDataURL({ format: 'png', quality: 0.85 });
+    
+    // Ölçü nəzarəti
+    if (designImage.length > 10 * 1024 * 1024) {
         const temp = document.createElement('canvas');
         const ctx = temp.getContext('2d');
-        const max = 400;
+        const max = 600;
         let w = canvas.width, h = canvas.height;
         if (w > max || h > max) { const r = Math.min(max/w, max/h); w *= r; h *= r; }
         temp.width = w; temp.height = h;
         ctx.drawImage(canvas.lowerCanvasEl, 0, 0, w, h);
-        designImage = temp.toDataURL('image/jpeg', 0.5);
-    }
-    
-    if (designImage.length > 50 * 1024) {
-        showToast('Dizayn çox böyükdür, daha sadə edin!', 'error');
-        return;
+        designImage = temp.toDataURL('image/png', 0.75);
     }
     
     const unit = calculateUnitPrice();
@@ -1151,11 +1126,12 @@ document.getElementById('finalOrderForm')?.addEventListener('submit', async func
     const orderId = generateOrderId();
     const orderDate = getCurrentDateTime();
     
-    let productImg = activeProduct.image || activeProduct.url || 'https://placehold.co/200x200';
+    let productImg = activeProduct.image || activeProduct.url || '';
     const fid = extractGoogleDriveId(productImg);
     if (fid) productImg = `https://lh3.googleusercontent.com/d/${fid}=w200-h200`;
     
-    const params = {
+    // Google Apps Script-ə göndəriləcək məlumatlar
+    const orderData = {
         email: CONFIG.ORDER_TO_EMAIL,
         order_id: orderId,
         order_date: orderDate,
@@ -1169,9 +1145,11 @@ document.getElementById('finalOrderForm')?.addEventListener('submit', async func
         product_size: selectedSize,
         product_quantity: currentQuantity,
         total_price: `${total.toFixed(2)} ₼`,
-        product_image: productImg,
-        design_image: designImage,
-        note: `Çap: ${getPrintTypeName()} | Qeyd: ${note}`
+        product_image: productImg || null,
+        design_image: designImage || null,
+        uploaded_image: uploadedUserImage || null,
+        print_type: getPrintTypeName(),
+        note: note || '-'
     };
     
     const btn = this.querySelector('button[type="submit"]');
@@ -1180,16 +1158,37 @@ document.getElementById('finalOrderForm')?.addEventListener('submit', async func
     btn.disabled = true;
     
     try {
-        await emailjs.send(CONFIG.EMAILJS_SERVICE_ID, CONFIG.EMAILJS_TEMPLATE_ID, params);
-        showToast('Sifarişiniz göndərildi!', 'success');
+        const response = await fetch(CONFIG.GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(orderData)
+        });
+        
+        showToast('Sifarişiniz uğurla göndərildi! ✅', 'success');
+        
+        // Success modal
+        document.getElementById('successModal').style.display = 'flex';
+        document.getElementById('modalTitle').textContent = 'Təşəkkürlər! 🎉';
+        document.getElementById('modalBody').innerHTML = `
+            <p style="font-size: 16px; margin-bottom: 10px;">Sifarişiniz qəbul edildi!</p>
+            <p style="font-weight: bold; color: #144e2e; font-size: 18px;">Sifariş №: ${orderId}</p>
+            <p style="font-size: 14px; color: #666;">Ən qısa zamanda sizinlə əlaqə saxlanılacaq.</p>
+        `;
+        
         closeOrderFormModal();
         this.reset();
+        
         const qtyInput = document.getElementById('orderQuantity');
         if (qtyInput) qtyInput.value = 1;
         currentQuantity = 1;
+        uploadedUserImage = null;
+        
     } catch (err) {
-        console.error('EmailJS xətası:', err);
-        showToast('Xəta: ' + (err?.text || 'Bilinməyən xəta baş verdi'), 'error');
+        console.error('Göndərmə xətası:', err);
+        showToast('Xəta baş verdi. Zəhmət olmasa yenidən cəhd edin.', 'error');
     } finally {
         btn.innerHTML = original;
         btn.disabled = false;
@@ -1203,7 +1202,6 @@ function closeSuccessModal() {
     document.getElementById('successModal').style.display = 'none';
 }
 
-// Modal xaricinə kliklə bağlama
 window.onclick = function(event) {
     const previewModal = document.getElementById('previewModal');
     const orderFormModal = document.getElementById('orderFormModal');
