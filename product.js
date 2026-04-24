@@ -1,4 +1,4 @@
-// product.js - Chaply Məhsullar (Google Apps Script ilə)
+// product.js - Chaply Məhsullar (Optimizasiya olunmuş versiya - 12 paralel yükləmə)
 
 // ============================================================
 // KONFİQURASİYA
@@ -8,7 +8,10 @@ const CONFIG = {
     PRODUCTS_SHEET: 'products',
     IMAGE_PROXY_URL: 'https://script.google.com/macros/s/AKfycbxVBpMw6VfLFSVVM9N1Mbfj7VZsORvisnFqgiZpPpdpJQWwGi2eO6wLY4CJD_zx59qm/exec',
     GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzKkslNu00930ibGFi244SFOQTKuKHuQG8ELHE9rwrIcS6AO0mnRPumB-dCnFD0KQq4/exec',
-    ORDER_TO_EMAIL: 'eli120124@gmail.com'
+    ORDER_TO_EMAIL: 'eli120124@gmail.com',
+    // 12 şəkil eyni anda yüklənəcək
+    PARALLEL_LOAD_LIMIT: 12,
+    ENABLE_PRELOAD: true
 };
 
 // BÜTÜN MÜMKÜN ÖLÇÜLƏR
@@ -20,6 +23,7 @@ let selectedSize = '';
 let currentQuantity = 1;
 
 const imageCache = new Map();
+const imagePromiseCache = new Map();
 
 // ============================================================
 // TOAST NOTIFICATION
@@ -96,26 +100,37 @@ function extractGoogleDriveId(url) {
 
 async function loadImageViaProxy(fileId) {
     if (imageCache.has(fileId)) return imageCache.get(fileId);
+    
+    if (imagePromiseCache.has(fileId)) {
+        return await imagePromiseCache.get(fileId);
+    }
 
     if (!CONFIG.IMAGE_PROXY_URL || CONFIG.IMAGE_PROXY_URL.includes('YOUR_SCRIPT_ID')) {
         console.warn('⚠️ Proksi URL təyin edilməyib!');
         return null;
     }
 
-    try {
-        const proxyUrl = `${CONFIG.IMAGE_PROXY_URL}?id=${fileId}`;
-        const response = await fetch(proxyUrl);
-        const data = await response.json();
+    const loadPromise = (async () => {
+        try {
+            const proxyUrl = `${CONFIG.IMAGE_PROXY_URL}?id=${fileId}`;
+            const response = await fetch(proxyUrl);
+            const data = await response.json();
 
-        if (data.success && data.dataUrl) {
-            imageCache.set(fileId, data.dataUrl);
-            return data.dataUrl;
+            if (data.success && data.dataUrl) {
+                imageCache.set(fileId, data.dataUrl);
+                return data.dataUrl;
+            }
+            return null;
+        } catch (error) {
+            console.error('❌ Proksi xətası:', error);
+            return null;
+        } finally {
+            imagePromiseCache.delete(fileId);
         }
-        return null;
-    } catch (error) {
-        console.error('❌ Proksi xətası:', error);
-        return null;
-    }
+    })();
+
+    imagePromiseCache.set(fileId, loadPromise);
+    return await loadPromise;
 }
 
 async function getImageUrl(originalUrl) {
@@ -129,6 +144,24 @@ async function getImageUrl(originalUrl) {
         return 'https://placehold.co/400x400/f0f7f4/1a5c3e?text=Yüklənmədi';
     }
     return originalUrl;
+}
+
+// ============================================================
+// 12 ŞƏKİL PARALEL YÜKLƏMƏ (ƏSAS OPTİMİZASİYA)
+// ============================================================
+async function loadAllImagesParallel(products) {
+    // Bütün şəkilləri eyni anda paralel yükləməyə başla
+    const loadPromises = products.map(async (product, index) => {
+        const imageUrl = await getImageUrl(product.image);
+        return { index, imageUrl, product };
+    });
+    
+    // 12 (və ya hamısı) şəkil eyni anda yüklənir
+    const results = await Promise.all(loadPromises);
+    
+    // Nəticələri sırala və qaytar
+    results.sort((a, b) => a.index - b.index);
+    return results.map(r => ({ ...r.product, cachedImageUrl: r.imageUrl }));
 }
 
 // ============================================================
@@ -200,13 +233,16 @@ async function showCart() {
 
     let cartItemsHtml = '';
     let totalPrice = 0;
+    
+    // Bütün şəkilləri paralel yüklə
+    const imagePromises = cart.map(item => getImageUrl(item.product.image));
+    const imageUrls = await Promise.all(imagePromises);
 
     for (let i = 0; i < cart.length; i++) {
         const item = cart[i];
         const itemTotal = item.product.price * item.quantity;
         totalPrice += itemTotal;
-
-        const imgUrl = await getImageUrl(item.product.image);
+        const imgUrl = imageUrls[i];
 
         cartItemsHtml += `
             <div style="display: flex; align-items: center; gap: 15px; padding: 15px 0; border-bottom: 1px solid #e0eae6;">
@@ -322,7 +358,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 // ============================================================
-// GOOGLE SHEETS-DƏN MƏHSULLAR
+// GOOGLE SHEETS-DƏN MƏHSULLAR (12 PARALEL YÜKLƏMƏ İLƏ)
 // ============================================================
 async function loadProductsFromSheets() {
     const grid = document.getElementById('productsGrid');
@@ -348,8 +384,12 @@ async function loadProductsFromSheets() {
             return;
         }
 
-        await renderProducts(ALL_PRODUCTS);
+        // Kateqoriyaları yüklə
         loadCategories();
+        
+        // 12 paralel yükləmə ilə şəkilləri yüklə
+        await renderProductsParallel(ALL_PRODUCTS);
+        
     } catch (err) {
         console.error(err);
         grid.innerHTML = '<div class="no-products"><i class="fas fa-exclamation-triangle"></i><span>Məhsullar yüklənmədi</span></div>';
@@ -357,7 +397,8 @@ async function loadProductsFromSheets() {
     }
 }
 
-async function renderProducts(products) {
+// 12 PARALEL YÜKLƏMƏ İLƏ RENDER
+async function renderProductsParallel(products) {
     const grid = document.getElementById('productsGrid');
     if (!grid) return;
 
@@ -366,17 +407,15 @@ async function renderProducts(products) {
         return;
     }
 
-    grid.innerHTML = '<div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i><span>Şəkillər yüklənir...</span></div>';
-
+    // Əvvəlcə placeholder şəkillərlə HTML yarat
     let html = '';
     for (let p of products) {
         const category = p.category || 'Məhsul';
-        const imageUrl = await getImageUrl(p.image);
-
+        
         html += `
             <div class="product-card" data-product='${JSON.stringify(p).replace(/'/g, "&apos;")}'>
                 <div class="product-img-wrapper">
-                    <img class="product-img" src="${imageUrl}" alt="${escapeHtml(p.name)}" loading="lazy">
+                    <img class="product-img" src="https://placehold.co/400x400/f0f7f4/1a5c3e?text=Yüklənir..." data-src="${escapeHtml(p.image || '')}" alt="${escapeHtml(p.name)}" loading="lazy">
                     ${p.oldPrice ? '<span class="product-badge">ENDİRİM</span>' : ''}
                     <div class="product-actions">
                         <button class="product-action-btn quick-add" title="Sürətli əlavə et">
@@ -401,6 +440,44 @@ async function renderProducts(products) {
 
     grid.innerHTML = html;
     attachProductEvents();
+    
+    // BÜTÜN ŞƏKİLLƏRİ 12 PARALEL YÜKLƏ
+    await loadAllImagesLazy();
+}
+
+// BÜTÜN ŞƏKİLLƏRİ 12 (VƏ YA HAMISINI) PARALEL YÜKLƏ
+async function loadAllImagesLazy() {
+    const images = document.querySelectorAll('.product-img[data-src]');
+    
+    if (images.length === 0) return;
+    
+    // Bütün unikal şəkil URL-lərini topla
+    const uniqueUrls = [...new Set(Array.from(images).map(img => img.getAttribute('data-src')))];
+    
+    console.log(`${uniqueUrls.length} şəkil 12 paralel yükləmə ilə yüklənir...`);
+    
+    // BÜTÜN ŞƏKİLLƏRİ EYNİ ANDA PARALEL YÜKLƏ (Hamısı birdən)
+    const loadPromises = uniqueUrls.map(async (originalUrl) => {
+        const imageUrl = await getImageUrl(originalUrl);
+        return { originalUrl, imageUrl };
+    });
+    
+    // Bütün şəkillər eyni anda yüklənir (Promise.all)
+    const results = await Promise.all(loadPromises);
+    
+    // Yüklənmiş şəkilləri təyin et
+    const urlMap = new Map(results.map(r => [r.originalUrl, r.imageUrl]));
+    
+    images.forEach(img => {
+        const originalUrl = img.getAttribute('data-src');
+        const loadedUrl = urlMap.get(originalUrl);
+        if (loadedUrl) {
+            img.src = loadedUrl;
+            img.removeAttribute('data-src');
+        }
+    });
+    
+    console.log(`Bütün ${uniqueUrls.length} şəkil yükləndi!`);
 }
 
 function attachProductEvents() {
@@ -580,10 +657,8 @@ function initOrderForm() {
         const orderId = generateOrderId();
         const orderDate = getCurrentDateTime();
 
-        // Şəkil URL-ini hazırla
         const productImageUrl = await getImageUrl(currentProduct.image);
 
-        // Google Apps Script-ə göndəriləcək məlumatlar
         const orderData = {
             email: CONFIG.ORDER_TO_EMAIL,
             order_id: orderId,
@@ -605,27 +680,20 @@ function initOrderForm() {
             note: note || 'Yoxdur'
         };
 
-        console.log('📧 Google Apps Script-ə göndərilir:', orderData);
-
-        // Loading göstər
         const submitBtn = form.querySelector('.submit-order-btn');
         const originalText = submitBtn.innerHTML;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Göndərilir...';
         submitBtn.disabled = true;
 
         try {
-            const response = await fetch(CONFIG.GOOGLE_SCRIPT_URL, {
+            await fetch(CONFIG.GOOGLE_SCRIPT_URL, {
                 method: 'POST',
                 mode: 'no-cors',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(orderData)
             });
 
-            console.log('✅ Sifariş göndərildi');
             showToast('✅ Sifarişiniz göndərildi! Tezliklə əlaqə saxlanılacaq.', 'success');
-
             document.getElementById('orderModal').style.display = 'none';
             form.reset();
         } catch (err) {
@@ -663,7 +731,7 @@ function loadCategories() {
 
             const cat = this.getAttribute('data-category');
             const filtered = cat === 'Hamısı' ? ALL_PRODUCTS : ALL_PRODUCTS.filter(p => p.category === cat);
-            await renderProducts(filtered);
+            await renderProductsParallel(filtered);
             document.getElementById('searchInput').value = '';
         });
     });
@@ -683,7 +751,7 @@ function initSearch() {
                 (p.description || '').toLowerCase().includes(term) ||
                 (p.category || '').toLowerCase().includes(term)
             );
-            await renderProducts(filtered);
+            await renderProductsParallel(filtered);
             document.querySelectorAll('.category-item').forEach(c => c.classList.remove('active'));
             document.querySelector('.category-item[data-category="Hamısı"]')?.classList.add('active');
         }, 300);
