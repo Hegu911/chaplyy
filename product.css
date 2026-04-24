@@ -1241,3 +1241,34 @@ body {
     background: #e0eae6;
     transform: scale(1.05);
 }
+/* Lazy loading üçün şəkil animasiyası */
+.product-img {
+    transition: opacity 0.3s ease;
+    opacity: 1;
+}
+
+.product-img[data-src] {
+    opacity: 0.6;
+}
+
+/* Loading spinner təkmilləşdirilməsi */
+.loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    padding: 60px 20px;
+    text-align: center;
+    color: var(--primary);
+}
+
+.loading-spinner i {
+    font-size: 40px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
